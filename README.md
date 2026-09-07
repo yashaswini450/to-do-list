@@ -1,45 +1,47 @@
-# 📝 To-Do App: Architecture & Implementation Guide
+# 📝 To-Do App: C++ Architecture & Implementation Guide
 
-A lightweight, scalable, and highly portable To-Do List application designed to track task descriptions and completion statuses. This document outlines the core architectural decisions, coding standards, and data structures for the project.
+A dead-simple, highly portable Command Line Interface (CLI) To-Do List application. This document outlines the core architectural decisions, coding standards, and data structures for building this app entirely in C++.
 
 ## 🏗️ Core Architectural Decisions
 
-To ensure the application is easily maintainable, fast, and universally accessible, we have made the following technology choices:
+Keeping things simple and efficient by relying on standard tools and avoiding unnecessary framework bloat.
 
 | Decision Area | Selected Technology | Rationale |
 | :--- | :--- | :--- |
-| **Programming Language** | **TypeScript** | Provides strict typing for task models, reducing runtime errors and improving developer experience through static analysis. |
-| **Tech Stack** | **React + Vite** | React offers a component-based architecture ideal for list rendering. Vite provides instantaneous hot-module replacement (HMR) and fast builds. |
-| **User Interface (UI)** | **Tailwind CSS** | A utility-first CSS framework that allows for rapid styling of a clean, responsive interface without maintaining separate stylesheets. |
-| **Portability** | **Progressive Web App (PWA)** | By configuring the app as a PWA, it becomes installable on Desktop, iOS, and Android directly from the browser, achieving cross-platform portability from a single codebase. |
+| **Programming Language** | **C++** (Core) / **Python** (Fallback) | C++ handles the core logic and memory efficiently. Python is kept in reserve for rapid prototyping or simple build/test scripts if needed. |
+| **Tech Stack** | **Standard C++ Library (STL) + CMake** | No heavy dependencies. The STL provides everything needed for data structures and file I/O. CMake ensures the project can be built easily on any OS. |
+| **User Interface (UI)** | **Command Line Interface (CLI)** | Maximum simplicity. A text-based menu system (`std::cin` / `std::cout`) avoids the complexity of GUI frameworks like Qt or ImGui, keeping the codebase small and focused. |
+| **Portability** | **Cross-Platform Compilation** | By sticking strictly to the C++ Standard Library and CMake, the application compiles and runs natively on Windows, macOS, and Linux without modification. |
 
 ---
 
 ## ✨ Code Aspects & Desirable Characteristics
 
-The codebase is structured to satisfy the following characteristics, ensuring high quality as the application scales:
+The codebase is structured to be robust, readable, and easy to maintain without over-engineering.
 
-*   **Maintainability via Separation of Concerns:** 
-    The business logic (state management, saving/loading data) is strictly separated from the UI presentation layer using custom React Hooks (e.g., `useTasks`). This makes testing easier and allows for future UI redesigns without breaking core logic.
-*   **Resilience via Offline Persistence:** 
-    The application state syncs automatically to browser `localStorage` on every mutation (add, toggle, delete). This ensures no data is lost if the browser tab is closed or the network drops.
-*   **Reliability via Type Safety:** 
-    Strict TypeScript interface definitions are applied to all data payloads and component props. This prevents bugs where a task might accidentally be saved with an invalid state.
-*   **Performance via Render Optimization:** 
-    Individual task items are wrapped in memoization functions (`React.memo`), and unique UUIDs are used as list `keys`. Toggling the status of one item only re-renders that specific item, keeping the UI highly responsive.
+*   **Resilience via Persistent Storage:** 
+    Tasks are saved to a simple text or CSV file using `std::ofstream`. On startup, `std::ifstream` loads the tasks into memory. This guarantees your to-do list survives application restarts.
+*   **Maintainability via Decoupled Logic:** 
+    The core `TaskManager` class (handling add/toggle/delete operations) is kept entirely separate from the CLI input/output loop. If you ever decide to add a Python GUI (like Tkinter) later, the core C++ logic remains untouched.
+*   **Memory Safety via RAII:** 
+    Modern C++ practices are strictly enforced. We use standard containers and stack allocation to automatically manage memory, completely avoiding raw pointers and manual `new`/`delete` calls to prevent memory leaks.
+*   **Simplicity over Premature Optimization (KISS):** 
+    Code prioritizes readability over micro-optimizations. Algorithms are kept straightforward because a personal to-do list does not require complex data handling.
 
 ---
 
 ## 🗄️ Data Structures
 
-The application relies on lightweight, fast data structures to manage the state of the tasks.
+We use standard, lightweight C++ structures to manage task data efficiently.
 
 ### The Task Object
-Each individual task is modeled as an object containing a unique identifier alongside the two required properties.
+Each task is represented as a basic `struct` holding the two required properties and an ID.
 
-```typescript
-interface Task {
-  id: string;          // UUID or timestamp for unique identification
-  description: string; // The text content of the task
-  isCompleted: boolean;// The completion status (true = done, false = pending)
-}
+```cpp
+#include <string>
+
+struct Task {
+    int id;                 // Sequential ID for easy CLI selection
+    std::string description;// The text content of the task
+    bool isCompleted;       // Completion status (true = done, false = pending)
+};
