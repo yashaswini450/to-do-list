@@ -1,0 +1,8 @@
+# Ignore compiled binaries
+*.out
+*.exe
+todo
+todo_app
+
+# Ignore local text database
+tasks.txt
